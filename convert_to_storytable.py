@@ -1,8 +1,9 @@
 import json
 import os
 
-json_file_path = r"C:\Users\Adolf\.gemini\antigravity\scratch\pipeline_data.json"
-storytable_file_path = r"C:\Users\Adolf\.gemini\antigravity\scratch\pipeline_data.storytable"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+json_file_path = os.path.join(script_dir, "pipeline_data.json")
+storytable_file_path = os.path.join(script_dir, "pipeline_data.storytable")
 
 with open(json_file_path, 'r', encoding='utf-8') as f:
     data = json.load(f)

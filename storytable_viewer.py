@@ -377,7 +377,7 @@ class StoryTableViewer(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
+
     viewer = StoryTableViewer()
     viewer.show()
     
