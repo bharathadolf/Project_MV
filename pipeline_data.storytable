@@ -1,0 +1,60 @@
+@PROJECT| Momverse
+
+@SCENE|01|THE MUD KINGDOM|45s|Earthy browns / golden hour
+@COLUMNS|Scene_ID|Shot_ID|Duration|Camera|Visual_Beat|Animation_Notes|Assets|Lighting|Sound
+@SHOT|01|01-01|4|Wide, static|Two kids (6‑8) leap into a massive mud puddle – pure joy|Exaggerated squash‑and‑stretch on jumps; anticipation before leap|Park trees, mud puddle, kids|Golden hour, long shadows|Wet squelch, giggles
+@SHOT|01|01-02|5|Close‑up on hands|Hands sculpting “mud cakes”; fingers squelching|Detailed finger rigging; mud clings to skin|Mud, sticks, leaves|Warm side light|Thick squelching, soft breathing
+@SHOT|01|01-03|5|Low angle|Kid 1 accidentally splashes Kid 2; they freeze, then burst into silent laughter|Exaggerated freeze (deer‑in‑headlights); laugh: mouth open, eyes crinkled|Kids, mud|Backlight from setting sun|Splash, pause, then high‑pitched giggles
+@SHOT|01|01-04|4|Extreme close‑up|Mud dripping from eyelashes; kids blink|Subtle eye movement; mud droplets slide|Kids faces|Rim light on mud|Drip sounds, blink (soft)
+@SHOT|01|01-05|6|Time‑lapse transition (wide)|Sun dips lower; shadows shift; kids hold hands, spin in mud creating sprays|Spinning motion; mud physics – heavy splatters|Kids, puddle|Shift from warm to cooler golden|Spinning sound, spray foley
+@SHOT|01|01-06|5|Medium two‑shot|Kids pause, panting, covered in mud; they look at each other, grinning|Chest heaving; shared glance, mischievous smile|Kids|Warm sidelight|Heavy breathing, grin sound (soft)
+@SHOT|01|01-07|4|Insert|Close‑up of a muddy handprint on a leaf|Hand pushes leaf into mud|Leaf, mud|Natural light|Leaf rustle, mud squish
+@SHOT|01|01-08|6|Crane up / wide|Kids run out of frame; puddle remains, ripples settle|Run cycle – joyful, unsteady; mud splashes with each step|Kids, puddle, trees|Evening glow, long shadows|Footsteps squelching, birds take flight
+@SHOT|01|01-09|6|Static wide|Empty puddle; sun dips below horizon; shift to next scene transition|–|Puddle, trees|Twilight|Ambient insects, wind
+
+@SCENE|02|THE WALK OF SHAME|30s|Cool kitchen light vs. warm hallway
+@COLUMNS|Scene_ID|Shot_ID|Duration|Camera|Visual_Beat|Animation_Notes|Assets|Lighting|Sound
+@SHOT|02|02-01|5|Tracking (ground level)|Small muddy footprints trailing across pavement|Footprints appear one by one; artistic, poignant|Pavement, feet|Streetlight, dusk|Soft footstep, scrape of mud
+@SHOT|02|02-02|4|Handheld|Door bursts open; kids tumble in, leaving brown smears on white walls|Stumble animation; smears procedurally placed|Front door, hallway, walls|Cool exterior light spills in|Door slam, smears (foley)
+@SHOT|02|02-03|5|Mirror reflection (medium)|Kids pause, see themselves; exchange mischievous grins, point at each other’s mud masks|Smirks, exaggerated pointing; mirror must reflect accurately|Mirror, hallway|Warm hallway light + cool mirror reflection|Giggles, finger point swish
+@SHOT|02|02-04|6|Wide (over shoulder of mother)|Mother enters from kitchen, coffee cup freezes halfway to lips|Subtle freeze; her eyes travel down kids|Mother, kitchen doorway, kids|Kitchen cool light / hallway warm contrast|Coffee cup clink, silence
+@SHOT|02|02-05|5|Slow motion close‑up|Her eyes widen, cup lowers, eyebrow twitches|Micro‑expressions: disbelief → resolve|Mother’s face|Soft kitchen rim light|Slow motion sound (breath, cup lowering)
+@SHOT|02|02-06|5|Medium two‑shot (kids)|Kids immediately freeze, then forced innocent expressions|Deer‑in‑headlights → wide eyes, hands behind back|Kids|Cool light from kitchen|Silence, heartbeat (optional)
+
+@SCENE|03|THE MARCH|40s|Cool hallway, warm living room contrast
+@COLUMNS|Scene_ID|Shot_ID|Duration|Camera|Visual_Beat|Animation_Notes|Assets|Lighting|Sound
+@SHOT|03|03-01|5|Low angle|Mother’s finger points toward bathroom (foreshortened, dominant)|Finger points with authority; subtle finger squash|Mother’s hand, hallway|Cool light from kitchen|Finger point swish, stern breath
+@SHOT|03|03-02|6|Kids’ POV|Kids look up at “giant” mother; her shadow envelops them|Camera tilts up; shadow grows|Mother, kids|Strong backlight|Dolly rumble, breathing
+@SHOT|03|03-03|8|Comedy wide|Kids try to sidestep toward living room toys; mother slides sideways, blocking path|Looney Tunes‑style side‑slide; perfect synchronisation|Mother, kids, living room entry|Warm living room light / cool hallway|Slide sound, soft “whoosh”
+@SHOT|03|03-04|5|Medium shot|Kids’ shoulders slump (universal defeat)|Shoulder slump, heads drop|Kids|Mixed light|Sigh, feet drag
+@SHOT|03|03-05|6|Low tracking|Kids drag feet, leaving snail‑trails of mud|Heavy steps; mud trails procedural|Kids, floor|Underlight from floor|Wet dragging, slow footsteps
+@SHOT|03|03-06|5|Medium|Mother taps watch (or sun dial gesture) – “now”|Tapping gesture; stern but hint of amusement|Mother, watch|Cool light|Tap, mother’s suppressed breath
+@SHOT|03|03-07|5|Wide|Kids enter bathroom; mother stays in hallway, shakes head|Kids disappear; mother’s micro‑expression: amused exasperation|Bathroom door, mother|Bathroom light spills out|Door close, mother’s soft chuckle
+
+@SCENE|04|TRANSFORMATION|50s|Cold bathroom (blue hour) → warm hallway
+@COLUMNS|Scene_ID|Shot_ID|Duration|Camera|Visual_Beat|Animation_Notes|Assets|Lighting|Sound
+@SHOT|04|04-01|6|Extreme close‑up|Brown water spiraling down drain|Water simulation; swirling vortex|Bathtub drain|Blue bathroom light|Drain gurgle, water spin
+@SHOT|04|04-02|8|Underwater shot|Kicking feet turning clear; pink skin emerging|Feet kick; water clears; surface ripples|Kids’ feet, bathwater|Underwater caustics|Bubbles, splashes
+@SHOT|04|04-03|6|Mirror fog|One kid draws happy face in condensation; other adds mud‑cake drawing|Finger drawing on fog; condensation must interact|Mirror, kids’ faces|Soft blue light|Finger squeak, giggles
+@SHOT|04|04-04|10|Over‑the‑shoulder|Mother enters (expression softened); vigorous towel rubbing; kids’ heads bob like ragdolls|Soft mother rig; head bob physics; towel sim|Mother, kids, towel|Warm light from doorway|Towel rub, wet hair sounds, soft laugh
+@SHOT|04|04-05|8|Medium two‑shot|Mother scrubs hair; kids’ faces squish|Exaggerated facial squish; mother’s gentle hands|Kids, mother|Soft overhead|Scrubbing, kids’ muffled giggles
+@SHOT|04|04-06|6|Wide (door opens)|Steam billows out; two clean figures in oversized towels, hair like dandelion puffs|Steam simulation; hair groom stands up|Kids, towels, bathroom door|Warm hallway light floods in|Door creak, steam whoosh, laughter
+@SHOT|04|04-07|6|Close‑up|Kids look at each other, then back at mother, grinning|Shared glance; clean, happy faces|Kids, mother|Warm light|Soft giggle, mother’s sigh
+
+@SCENE|05|THE MUD CAKE CONFESSION|75s|Warm golden ambers, sepia
+@COLUMNS|Scene_ID|Shot_ID|Duration|Camera|Visual_Beat|Animation_Notes|Assets|Lighting|Sound
+@SHOT|05|05-01|6|Wide (bedroom)|Kids in clean pajamas, sitting cross‑legged on bed; they look at each other|Synchronised posture; anticipation|Twin beds, kids|Warm lamp light|Soft ambient, breathing
+@SHOT|05|05-02|8|Medium two‑shot|Kid 1 mimes “mixing bowl” (the puddle); Kid 2 mimes “eating” (pretend mud cake)|Exaggerated mime; eye contact|Kids|Lamp light|Mime sound effects (soft gestures)
+@SHOT|05|05-03|6|Medium|They collapse into silent giggles|Shaking shoulders, mouths open, eyes closed|Kids|Warm fill|Giggles, bedsheets rustle
+@SHOT|05|05-04|8|Over‑the‑shoulder (mother)|Mother enters, sees mime; understanding dawns (hand to heart)|Hand to heart; soft smile; eyes glazing (flash of memory)|Mother, doorway|Warm light from room|Soft footsteps, mother’s breath
+@SHOT|05|05-05|10|Close‑up|Kids pull out a real leaf from pocket; present it like treasure|Slow, careful hand movement; leaf held with both hands|Leaf, kids’ hands|Warm spotlight on leaf|Leaf rustle, delicate breath
+@SHOT|05|05-06|12|Two‑shot (mother + kids)|Mother sits between them; arms around shoulders; kids lean in (weight shift)|Weight shift; mother’s arms wrap; kids snuggle|Mother, kids|Soft lamp, moonlight|Blanket rustle, content sigh
+@SHOT|05|05-07|10|Over‑the‑shoulder from window|Three silhouettes against warm lamplight; steam rises from mugs|Steam sim; silhouettes; she tucks them in|Window, silhouettes, mugs|Warm interior / cool moonlight|Steam hiss, tucking sound, yawn
+@SHOT|05|05-08|5|Extreme close‑up|Thumb strokes the leaf; eyelids grow heavy; synchronized yawn|Subtle thumb stroke; yawn sync|Mother’s hand, leaf|Soft light|Yawn, blanket pull
+@SHOT|05|05-09|10|Fade to black|Mother adjusts blankets; room grows still|Slow fade|Mother, kids|Light dims|Ambient silence, breath
+
+@SCENE|06|EPILOGUE (Credits)|15s|Moonlight
+@COLUMNS|Scene_ID|Shot_ID|Duration|Camera|Visual_Beat|Animation_Notes|Assets|Lighting|Sound
+@SHOT|06|06-01|8|Exterior wide|Light clicks off in bedroom window; small handprint (still slightly dirty) visible on glass|Handprint procedural; light click animation|House exterior, window, handprint|Moonlight|Light click, soft ambient
+@SHOT|06|06-02|7|Hold on handprint|Fade to black on that imperfection|Slow fade|Window|Moonlight|Fade to silence
+
