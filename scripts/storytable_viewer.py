@@ -3,8 +3,9 @@ import os
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                                QSplitter, QListWidget, QTableWidget, QTableWidgetItem, 
                                QPushButton, QLabel, QHeaderView, QListWidgetItem, QFrame,
-                               QFileDialog)
+                               QFileDialog, QMessageBox, QInputDialog)
 from PySide6.QtCore import Qt, QSize
+from convert_to_storytable import convert_json_to_storytable, convert_md_to_storytable
 from PySide6.QtGui import QFont, QIcon, QColor, QAction
 
 class StoryTableParser:
@@ -77,6 +78,24 @@ class StoryTableViewer(QMainWindow):
         open_action = QAction("Open .storytable", self)
         open_action.triggered.connect(self.on_load_clicked)
         file_menu.addAction(open_action)
+        
+        import_menu = file_menu.addMenu("Import")
+        
+        indiv_menu = import_menu.addMenu("Individual")
+        indiv_json_action = QAction("JSON", self)
+        indiv_json_action.triggered.connect(self.on_import_indiv_json)
+        indiv_md_action = QAction("Markdown", self)
+        indiv_md_action.triggered.connect(self.on_import_indiv_md)
+        indiv_menu.addAction(indiv_json_action)
+        indiv_menu.addAction(indiv_md_action)
+        
+        batch_menu = import_menu.addMenu("Batch")
+        batch_json_action = QAction("JSON", self)
+        batch_json_action.triggered.connect(self.on_import_batch_json)
+        batch_md_action = QAction("Markdown", self)
+        batch_md_action.triggered.connect(self.on_import_batch_md)
+        batch_menu.addAction(batch_json_action)
+        batch_menu.addAction(batch_md_action)
         
         file_menu.addSeparator()
         
@@ -166,8 +185,15 @@ class StoryTableViewer(QMainWindow):
     def apply_theme(self):
         # A modern dark theme for pipeline tools
         self.setStyleSheet("""
-            QMainWindow {
+            QMainWindow, QDialog, QMessageBox {
                 background-color: #1e1e1e;
+                color: #e0e0e0;
+            }
+            QLineEdit {
+                background-color: #2d2d2d;
+                color: #ffffff;
+                border: 1px solid #555555;
+                padding: 4px;
             }
             QMenuBar {
                 background-color: #1e1e1e;
@@ -310,6 +336,75 @@ class StoryTableViewer(QMainWindow):
         )
         if file_path:
             self.load_file(file_path)
+
+    def on_import_indiv_json(self):
+        self.handle_indiv_import("JSON Files (*.json);;All Files (*)", convert_json_to_storytable)
+
+    def on_import_indiv_md(self):
+        self.handle_indiv_import("Markdown Files (*.md);;All Files (*)", convert_md_to_storytable)
+
+    def on_import_batch_json(self):
+        self.handle_batch_import("JSON Files (*.json);;All Files (*)", convert_json_to_storytable)
+        
+    def on_import_batch_md(self):
+        self.handle_batch_import("Markdown Files (*.md);;All Files (*)", convert_md_to_storytable)
+
+    def handle_indiv_import(self, file_filter, converter_func):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Import File", "", file_filter
+        )
+        if file_path:
+            default_out = file_path.rsplit('.', 1)[0] + '.storytable'
+            output_path, _ = QFileDialog.getSaveFileName(
+                self, "Save Storytable File", 
+                default_out, 
+                "Storytable Files (*.storytable)"
+            )
+            
+            if output_path:
+                try:
+                    converter_func(file_path, output_path)
+                    self.load_file(output_path)
+                    QMessageBox.information(self, "Success", f"Successfully converted and loaded:\n{output_path}")
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", f"Failed to convert file:\n{str(e)}")
+
+    def handle_batch_import(self, file_filter, converter_func):
+        file_paths, _ = QFileDialog.getOpenFileNames(
+            self, "Select Files to Import", "", file_filter
+        )
+        if not file_paths:
+            return
+            
+        prefix, ok = QInputDialog.getText(
+            self, "Batch Target Prefix", "Enter the naming prefix (e.g. 'episode'):"
+        )
+        if not ok or not prefix.strip():
+            return
+        prefix = prefix.strip()
+        
+        save_dir = QFileDialog.getExistingDirectory(self, "Select Save Directory")
+        if not save_dir:
+            return
+            
+        success_count = 0
+        last_success = None
+        for i, file_path in enumerate(file_paths):
+            output_name = f"{prefix}{i+1}.storytable"
+            output_path = os.path.join(save_dir, output_name)
+            try:
+                converter_func(file_path, output_path)
+                success_count += 1
+                last_success = output_path
+            except Exception as e:
+                print(f"Failed to convert {file_path}: {e}")
+                
+        if success_count > 0:
+            if last_success:
+                self.load_file(last_success)
+            QMessageBox.information(self, "Batch Complete", f"Successfully converted {success_count} files.\nPreviewing last file.")
+        else:
+            QMessageBox.warning(self, "Batch Failed", "No files were successfully converted.")
 
     def load_file(self, filepath):
         success = self.parser.parse(filepath)
