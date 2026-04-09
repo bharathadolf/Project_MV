@@ -2,10 +2,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Data and tests folders
-data/
+# Ignore contents of json and storytable sub-folders but keep the folders
+data/json/*
+!data/json/.gitkeep
+data/storytable/*
+!data/storytable/.gitkeep
 tests/
-
-# Sub-folders of data explicitly ignored
-json/
-storytable/
