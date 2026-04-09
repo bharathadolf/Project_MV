@@ -142,8 +142,8 @@ def convert_md_to_storytable(md_file_path, storytable_file_path):
 
 if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    json_file_path = os.path.join(project_dir, "data", "pipeline_data.json")
-    storytable_file_path = os.path.join(project_dir, "data", "pipeline_data.storytable")
+    json_file_path = os.path.join(project_dir, "data", "json", "pipeline_data.json")
+    storytable_file_path = os.path.join(project_dir, "data", "storytable", "pipeline_data.storytable")
     
     if os.path.exists(json_file_path):
         convert_json_to_storytable(json_file_path, storytable_file_path)

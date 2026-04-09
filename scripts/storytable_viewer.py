@@ -1,9 +1,10 @@
 import sys
 import os
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
-                               QSplitter, QListWidget, QTableWidget, QTableWidgetItem, 
-                               QPushButton, QLabel, QHeaderView, QListWidgetItem, QFrame,
-                               QFileDialog, QMessageBox, QInputDialog)
+                               QSplitter, QTreeWidget, QTreeWidgetItem, QTableWidget, QTableWidgetItem, 
+                               QPushButton, QLabel, QHeaderView, QFrame,
+                               QFileDialog, QMessageBox, QInputDialog, QProgressBar,
+                               QDialog, QCheckBox, QDialogButtonBox, QScrollArea)
 from PySide6.QtCore import Qt, QSize
 from convert_to_storytable import convert_json_to_storytable, convert_md_to_storytable
 from PySide6.QtGui import QFont, QIcon, QColor, QAction
@@ -54,10 +55,45 @@ class StoryTableParser:
             print(f"Error parsing file: {e}")
             return False
 
+class MultiSelectDialog(QDialog):
+    def __init__(self, file_list, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Select Files to Load")
+        self.resize(400, 300)
+        
+        layout = QVBoxLayout(self)
+        label = QLabel("Select among these converted files to load onto the interface:")
+        layout.addWidget(label)
+        
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_widget = QWidget()
+        self.scroll_layout = QVBoxLayout(self.scroll_widget)
+        self.scroll_layout.setAlignment(Qt.AlignTop)
+        
+        self.checkboxes = []
+        for file_path in file_list:
+            cb = QCheckBox(os.path.basename(file_path))
+            cb.setProperty("filepath", file_path)
+            cb.setChecked(True)
+            self.scroll_layout.addWidget(cb)
+            self.checkboxes.append(cb)
+            
+        self.scroll_area.setWidget(self.scroll_widget)
+        layout.addWidget(self.scroll_area)
+        
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+        
+    def get_selected_files(self):
+        return [cb.property("filepath") for cb in self.checkboxes if cb.isChecked()]
+
 class StoryTableViewer(QMainWindow):
     def __init__(self, initial_file=None):
         super().__init__()
-        self.parser = StoryTableParser()
+        self.loaded_projects = []
         
         self.setWindowTitle("Storytable Pipeline Viewer")
         self.resize(1200, 800)
@@ -68,20 +104,21 @@ class StoryTableViewer(QMainWindow):
         self.status_bar = self.statusBar()
         self.status_bar.showMessage("Ready")
         
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+        self.progress_bar.setMaximumWidth(200)
+        self.status_bar.addPermanentWidget(self.progress_bar)
+        
         if initial_file and os.path.exists(initial_file):
-            self.load_file(initial_file)
+            self.load_files([initial_file])
 
     def create_menus(self):
         menubar = self.menuBar()
         file_menu = menubar.addMenu("File")
         
-        open_action = QAction("Open .storytable", self)
-        open_action.triggered.connect(self.on_load_clicked)
-        file_menu.addAction(open_action)
+        convert_menu = file_menu.addMenu("Convert")
         
-        import_menu = file_menu.addMenu("Import")
-        
-        indiv_menu = import_menu.addMenu("Individual")
+        indiv_menu = convert_menu.addMenu("Individual")
         indiv_json_action = QAction("JSON", self)
         indiv_json_action.triggered.connect(self.on_import_indiv_json)
         indiv_md_action = QAction("Markdown", self)
@@ -89,13 +126,25 @@ class StoryTableViewer(QMainWindow):
         indiv_menu.addAction(indiv_json_action)
         indiv_menu.addAction(indiv_md_action)
         
-        batch_menu = import_menu.addMenu("Batch")
+        batch_menu = convert_menu.addMenu("Batch")
         batch_json_action = QAction("JSON", self)
         batch_json_action.triggered.connect(self.on_import_batch_json)
         batch_md_action = QAction("Markdown", self)
         batch_md_action.triggered.connect(self.on_import_batch_md)
         batch_menu.addAction(batch_json_action)
         batch_menu.addAction(batch_md_action)
+        
+        import_menu = file_menu.addMenu("Import")
+        
+        import_indiv_menu = import_menu.addMenu("Individual")
+        i_indiv_action = QAction(".storytable", self)
+        i_indiv_action.triggered.connect(self.on_load_clicked)
+        import_indiv_menu.addAction(i_indiv_action)
+        
+        import_batch_menu = import_menu.addMenu("Batch")
+        i_batch_action = QAction(".storytable", self)
+        i_batch_action.triggered.connect(self.on_batch_load_clicked)
+        import_batch_menu.addAction(i_batch_action)
         
         file_menu.addSeparator()
         
@@ -151,7 +200,8 @@ class StoryTableViewer(QMainWindow):
         lbl_scenes.setContentsMargins(5, 10, 5, 10)
         left_layout.addWidget(lbl_scenes)
         
-        self.list_scenes = QListWidget()
+        self.list_scenes = QTreeWidget()
+        self.list_scenes.setHeaderHidden(True)
         self.list_scenes.itemSelectionChanged.connect(self.on_scene_selected)
         self.list_scenes.setObjectName("sceneList")
         left_layout.addWidget(self.list_scenes)
@@ -252,22 +302,22 @@ class StoryTableViewer(QMainWindow):
                 background-color: #007acc;
                 border: 1px solid #007acc;
             }
-            QListWidget {
+            QTreeWidget {
                 background-color: #252526;
                 color: #cccccc;
                 border: none;
                 outline: none;
             }
-            QListWidget::item {
+            QTreeWidget::item {
                 padding: 10px 5px;
                 border-bottom: 1px solid #333333;
             }
-            QListWidget::item:selected {
+            QTreeWidget::item:selected {
                 background-color: #007acc;
                 color: #ffffff;
                 font-weight: bold;
             }
-            QListWidget::item:hover:!selected {
+            QTreeWidget::item:hover:!selected {
                 background-color: #2a2d2e;
             }
             QTableWidget {
@@ -330,12 +380,19 @@ class StoryTableViewer(QMainWindow):
         is_visible = self.left_panel.isVisible()
         self.left_panel.setVisible(not is_visible)
 
-    def on_load_clicked(self):
+    def on_load_clicked(self, *args):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open Storytable File", "", "Storytable Files (*.storytable);;All Files (*)"
         )
         if file_path:
-            self.load_file(file_path)
+            self.load_files([file_path])
+
+    def on_batch_load_clicked(self, *args):
+        file_paths, _ = QFileDialog.getOpenFileNames(
+            self, "Select Storytable Files", "", "Storytable Files (*.storytable);;All Files (*)"
+        )
+        if file_paths:
+            self.load_files(file_paths)
 
     def on_import_indiv_json(self):
         self.handle_indiv_import("JSON Files (*.json);;All Files (*)", convert_json_to_storytable)
@@ -351,7 +408,7 @@ class StoryTableViewer(QMainWindow):
 
     def handle_indiv_import(self, file_filter, converter_func):
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "Import File", "", file_filter
+            self, "Convert File", "", file_filter
         )
         if file_path:
             default_out = file_path.rsplit('.', 1)[0] + '.storytable'
@@ -364,14 +421,22 @@ class StoryTableViewer(QMainWindow):
             if output_path:
                 try:
                     converter_func(file_path, output_path)
-                    self.load_file(output_path)
-                    QMessageBox.information(self, "Success", f"Successfully converted and loaded:\n{output_path}")
+                    
+                    msg_box = QMessageBox(self)
+                    msg_box.setWindowTitle("Load File")
+                    msg_box.setText(f"Successfully saved to:\n{output_path}\n\nDo you want to load this file now?")
+                    load_btn = msg_box.addButton("Load", QMessageBox.AcceptRole)
+                    cancel_btn = msg_box.addButton("Cancel", QMessageBox.RejectRole)
+                    msg_box.exec()
+                    
+                    if msg_box.clickedButton() == load_btn:
+                        self.load_files([output_path])
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"Failed to convert file:\n{str(e)}")
 
     def handle_batch_import(self, file_filter, converter_func):
         file_paths, _ = QFileDialog.getOpenFileNames(
-            self, "Select Files to Import", "", file_filter
+            self, "Select Files to Convert", "", file_filter
         )
         if not file_paths:
             return
@@ -388,41 +453,91 @@ class StoryTableViewer(QMainWindow):
             return
             
         success_count = 0
-        last_success = None
+        converted_files = []
+        
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setMaximum(len(file_paths))
+        self.progress_bar.setValue(0)
+        
         for i, file_path in enumerate(file_paths):
             output_name = f"{prefix}{i+1}.storytable"
             output_path = os.path.join(save_dir, output_name)
             try:
                 converter_func(file_path, output_path)
                 success_count += 1
-                last_success = output_path
+                converted_files.append(output_path)
             except Exception as e:
                 print(f"Failed to convert {file_path}: {e}")
                 
+            self.progress_bar.setValue(i + 1)
+            QApplication.processEvents()
+            
+        self.progress_bar.setVisible(False)
+                
         if success_count > 0:
-            if last_success:
-                self.load_file(last_success)
-            QMessageBox.information(self, "Batch Complete", f"Successfully converted {success_count} files.\nPreviewing last file.")
+            dialog = MultiSelectDialog(converted_files, self)
+            if dialog.exec() == QDialog.Accepted:
+                selected_files = dialog.get_selected_files()
+                if selected_files:
+                    self.load_files(selected_files)
         else:
             QMessageBox.warning(self, "Batch Failed", "No files were successfully converted.")
 
-    def load_file(self, filepath):
-        success = self.parser.parse(filepath)
-        if success:
-            self.lbl_project.setText(f"Project: {self.parser.project_name}")
+    def load_files(self, filepaths):
+        self.loaded_projects = []
+        
+        # A curated list of elegant dark theme compatible colors to assign to different files
+        theme_colors = [
+            "#3B82F6", # Blue
+            "#10B981", # Emerald
+            "#F59E0B", # Amber
+            "#8B5CF6", # Violet
+            "#EF4444", # Red
+            "#EC4899", # Pink
+            "#06B6D4", # Cyan
+        ]
+        
+        for i, filepath in enumerate(filepaths):
+            parser = StoryTableParser()
+            success = parser.parse(filepath)
+            if success:
+                color = theme_colors[i % len(theme_colors)]
+                self.loaded_projects.append({
+                    "parser": parser,
+                    "color": color,
+                    "filename": os.path.basename(filepath)
+                })
+                
+        if self.loaded_projects:
+            if len(self.loaded_projects) == 1:
+                self.lbl_project.setText(f"Project: {self.loaded_projects[0]['parser'].project_name}")
+            else:
+                self.lbl_project.setText("Multiple Projects Loaded")
+                
             self.populate_scenes()
-            # Select first scene by default if available
-            if self.list_scenes.count() > 0:
-                self.list_scenes.setCurrentRow(0)
+            if self.list_scenes.topLevelItemCount() > 0:
+                self.list_scenes.setCurrentItem(self.list_scenes.topLevelItem(0))
     
     def populate_scenes(self):
         self.list_scenes.clear()
-        for i, scene in enumerate(self.parser.scenes):
-            display_text = f"Scene {scene['id']}: {scene['name']}\n{scene['duration']} | {scene['color']}"
-            item = QListWidgetItem(display_text)
-            # Store scene index as data for easy retrieval
-            item.setData(Qt.UserRole, i)
-            self.list_scenes.addItem(item)
+        
+        for p_idx, project_data in enumerate(self.loaded_projects):
+            parser = project_data["parser"]
+            file_color = project_data["color"]
+            filename = project_data["filename"]
+            
+            parent_item = QTreeWidgetItem(self.list_scenes)
+            parent_item.setText(0, filename)
+            parent_item.setForeground(0, QColor(file_color))
+            parent_item.setData(0, Qt.UserRole, (p_idx, -1))
+            parent_item.setExpanded(False)
+            
+            for s_idx, scene in enumerate(parser.scenes):
+                display_text = f"Scene {scene['id']}: {scene['name']}\n{scene['duration']} | {scene['color']}"
+                child_item = QTreeWidgetItem(parent_item)
+                child_item.setText(0, display_text)
+                child_item.setForeground(0, QColor(file_color))
+                child_item.setData(0, Qt.UserRole, (p_idx, s_idx))
             
     def on_scene_selected(self):
         selected_items = self.list_scenes.selectedItems()
@@ -430,42 +545,51 @@ class StoryTableViewer(QMainWindow):
             return
             
         item = selected_items[0]
-        scene_idx = item.data(Qt.UserRole)
-        scene = self.parser.scenes[scene_idx]
+        data = item.data(0, Qt.UserRole)
+        if data is None:
+            return
+            
+        p_idx, s_idx = data
         
-        self.lbl_details.setText(f" Shot Details - Scene {scene['id']}")
-        self.populate_shots(scene)
+        project_data = self.loaded_projects[p_idx]
         
-    def populate_shots(self, scene):
+        if s_idx == -1:
+            item.setExpanded(not item.isExpanded())
+            self.table_shots.clearContents()
+            self.table_shots.setRowCount(0)
+            self.lbl_details.setText(f" Shot Details - {project_data['filename']}")
+            return
+            
+        parser = project_data["parser"]
+        scene = parser.scenes[s_idx]
+        
+        self.lbl_details.setText(f" Shot Details - Scene {scene['id']} ({project_data['filename']})")
+        self.populate_shots(parser, scene)
+        
+    def populate_shots(self, parser, scene):
         self.table_shots.clear()
         
-        # Set columns
-        cols = self.parser.columns
+        cols = parser.columns
         self.table_shots.setColumnCount(len(cols))
         self.table_shots.setHorizontalHeaderLabels(cols)
         
-        # Add shots
         shots = scene['shots']
         self.table_shots.setRowCount(len(shots))
         
         for row_idx, shot_data in enumerate(shots):
             for col_idx, col_value in enumerate(shot_data):
-                # Ensure we don't go out of bounds if a row has missing cols
                 if col_idx < len(cols):
                     table_item = QTableWidgetItem(str(col_value))
-                    # Allow text wrapping in table items
                     table_item.setTextAlignment(Qt.AlignTop | Qt.AlignLeft)
                     self.table_shots.setItem(row_idx, col_idx, table_item)
         
         self.table_shots.resizeRowsToContents()
         self.table_shots.resizeColumnsToContents()
         
-        # Adjust some columns if they are too wide
         for i in range(len(cols)):
             if self.table_shots.columnWidth(i) > 300:
                 self.table_shots.setColumnWidth(i, 300)
                 
-        # Update status bar with dimensions
         rows = self.table_shots.rowCount()
         cols_count = self.table_shots.columnCount()
         self.status_bar.showMessage(f"Data Dimensions: {rows} rows x {cols_count} columns")
