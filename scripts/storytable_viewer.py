@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QFileDialog, QMessageBox, QInputDialog, QProgressBar,
                                QDialog, QCheckBox, QDialogButtonBox, QScrollArea,
                                QMenu, QToolBar, QTabWidget, QFormLayout, QLineEdit, 
-                               QSpinBox, QAbstractItemView)
+                               QSpinBox, QAbstractItemView, QToolButton)
 from PySide6.QtCore import Qt, QSize
 from convert_to_storytable import convert_json_to_storytable, convert_md_to_storytable
 from PySide6.QtGui import QFont, QIcon, QColor, QAction
@@ -461,30 +461,46 @@ class StoryTableViewer(QMainWindow):
         
         self.action_make_primary = QAction("⭐", self)
         self.action_make_primary.setToolTip("Make this column primary")
-        self.action_make_primary.triggered.connect(self.on_make_primary)
+        self.action_make_primary.triggered.connect(self.on_global_placeholder)
         
         self.action_edit_template = QAction("📄", self)
         self.action_edit_template.setToolTip("Edit the column template")
-        self.action_edit_template.triggered.connect(self.on_edit_template)
+        self.action_edit_template.triggered.connect(self.on_global_placeholder)
         
         self.action_rename_column = QAction("✏️", self)
         self.action_rename_column.setToolTip("Rename")
-        self.action_rename_column.triggered.connect(self.on_rename_column)
+        self.action_rename_column.triggered.connect(self.on_global_placeholder)
         
         self.action_edit_values = QAction("📋", self)
         self.action_edit_values.setToolTip("Edit values")
-        self.action_edit_values.triggered.connect(self.on_edit_values)
+        self.action_edit_values.triggered.connect(self.on_global_placeholder)
         
-        self.action_segregate_columns = QAction("🗂️", self)
-        self.action_segregate_columns.setToolTip("Segregate primary columns")
-        self.action_segregate_columns.triggered.connect(self.on_segregate_columns)
+        self.btn_segregate = QToolButton(self)
+        self.btn_segregate.setText("🗂️")
+        self.btn_segregate.setToolTip("Segregate primary columns")
+        self.btn_segregate.setPopupMode(QToolButton.InstantPopup)
+        segregate_menu = QMenu(self)
+        
+        self.action_seg_cur_scene = QAction("a) Current Scene", self)
+        self.action_seg_cur_scene.triggered.connect(self.on_segregate_current_scene)
+        
+        self.action_seg_cur_file = QAction("b) All Scenes in Current File", self)
+        self.action_seg_cur_file.triggered.connect(self.on_segregate_current_file)
+        
+        self.action_seg_all_files = QAction("c) Across All Files", self)
+        self.action_seg_all_files.triggered.connect(self.on_segregate_all_files)
+        
+        segregate_menu.addAction(self.action_seg_cur_scene)
+        segregate_menu.addAction(self.action_seg_cur_file)
+        segregate_menu.addAction(self.action_seg_all_files)
+        self.btn_segregate.setMenu(segregate_menu)
         
         self.table_ribbon.addAction(self.action_make_primary)
         self.table_ribbon.addAction(self.action_edit_template)
         self.table_ribbon.addAction(self.action_rename_column)
         self.table_ribbon.addAction(self.action_edit_values)
         self.table_ribbon.addSeparator()
-        self.table_ribbon.addAction(self.action_segregate_columns)
+        self.table_ribbon.addWidget(self.btn_segregate)
         
         self.enable_ribbon_actions(False)
         right_layout.addWidget(self.table_ribbon)
@@ -936,14 +952,27 @@ class StoryTableViewer(QMainWindow):
         if logicalIndex < 0: return
             
         self.on_header_clicked(logicalIndex)
+        header_item = self.table_shots.horizontalHeaderItem(logicalIndex)
+        col_name = header_item.text().lower() if header_item else ""
         
         menu = QMenu(self)
-        menu.addAction(self.action_make_primary)
-        menu.addAction(self.action_edit_template)
-        menu.addAction(self.action_rename_column)
-        menu.addAction(self.action_edit_values)
-        menu.addSeparator()
-        menu.addAction(self.action_segregate_columns)
+        
+        ctx_make_primary = QAction("Remove Primary Status" if col_name in self.primary_columns else "Make Primary", self)
+        ctx_make_primary.triggered.connect(self.on_make_primary)
+        
+        ctx_edit_template = QAction("Edit Template", self)
+        ctx_edit_template.triggered.connect(self.on_edit_template)
+        
+        ctx_rename_column = QAction("Rename Column", self)
+        ctx_rename_column.triggered.connect(self.on_rename_column)
+        
+        ctx_edit_values = QAction("Edit Values", self)
+        ctx_edit_values.triggered.connect(self.on_edit_values)
+        
+        menu.addAction(ctx_make_primary)
+        menu.addAction(ctx_edit_template)
+        menu.addAction(ctx_rename_column)
+        menu.addAction(ctx_edit_values)
         
         menu.exec(self.table_shots.horizontalHeader().mapToGlobal(pos))
 
@@ -1077,28 +1106,75 @@ class StoryTableViewer(QMainWindow):
             self.populate_shots(parser, scene)
             self.populate_scenes()
 
-    def on_segregate_columns(self):
+    def on_global_placeholder(self):
+        QMessageBox.information(self, "In Development", "Global controls are currently in development and will be available in a future update.")
+
+    def _compute_segregated_order(self, parser_columns):
+        primary_logical = []
+        non_primary_logical = []
+        for idx, col_name in enumerate(parser_columns):
+            if col_name.lower() in self.primary_columns:
+                primary_logical.append(idx)
+            else:
+                non_primary_logical.append(idx)
+        return primary_logical + non_primary_logical
+
+    def on_segregate_current_scene(self):
         header = self.table_shots.horizontalHeader()
         col_count = self.table_shots.columnCount()
         if col_count == 0:
             return
             
-        primary_logical = []
-        non_primary_logical = []
-        
+        current_cols = []
         for idx in range(col_count):
             header_item = self.table_shots.horizontalHeaderItem(idx)
-            if header_item and header_item.text().lower() in self.primary_columns:
-                primary_logical.append(idx)
-            else:
-                non_primary_logical.append(idx)
-                
-        new_visual_order = primary_logical + non_primary_logical
+            current_cols.append(header_item.text() if header_item else "")
+            
+        new_visual_order = self._compute_segregated_order(current_cols)
         
         for visual_idx, logical_idx in enumerate(new_visual_order):
             current_visual_idx = header.visualIndex(logical_idx)
             if current_visual_idx != visual_idx:
                 header.moveSection(current_visual_idx, visual_idx)
+
+    def _segregate_parser_files(self, parsers_to_update):
+        for parser in parsers_to_update:
+            if not parser.columns: continue
+            new_order = self._compute_segregated_order(parser.columns)
+            
+            new_cols = [parser.columns[i] for i in new_order]
+            parser.columns = new_cols
+            
+            for scene in parser.scenes:
+                for idx, shot in enumerate(scene["shots"]):
+                    padded_shot = shot + [""] * (len(parser.columns) - len(shot))
+                    new_shot = [padded_shot[i] for i in new_order]
+                    scene["shots"][idx] = new_shot
+                    
+            parser.save_to_file()
+            
+        if self.current_selection:
+            p_idx, s_idx = self.current_selection
+            parser = self.loaded_projects[p_idx]["parser"]
+            if parser in parsers_to_update:
+                scene = parser.scenes[s_idx]
+                self.populate_shots(parser, scene)
+
+    def on_segregate_current_file(self):
+        if not self.current_selection:
+            QMessageBox.warning(self, "No file selected", "Please select a scene to identify the current file.")
+            return
+        p_idx, _ = self.current_selection
+        parser = self.loaded_projects[p_idx]["parser"]
+        self._segregate_parser_files([parser])
+        QMessageBox.information(self, "Success", f"Segregated columns and saved file.")
+
+    def on_segregate_all_files(self):
+        if not self.loaded_projects:
+            return
+        parsers = [proj["parser"] for proj in self.loaded_projects]
+        self._segregate_parser_files(parsers)
+        QMessageBox.information(self, "Success", "Segregated columns across all loaded files and saved.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
